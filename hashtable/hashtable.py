@@ -2,15 +2,15 @@ class HashTableEntry:
     """
     Linked List hash table key/value pair
     """
-    def __init__(self, key, value):
+    def __init__(self, key, value, nxt=None):
         self.key = key
         self.value = value
-        self.next = None
+        self.next = nxt
+        self.prev = None
 
-
-# Hash table can't have fewer than this many slots
-MIN_CAPACITY = 8
-
+class LinkedList:
+    def __init__(self, head):
+        self.head = head
 
 class HashTable:
     """
@@ -20,9 +20,10 @@ class HashTable:
     Implement this.
     """
 
-    def __init__(self, capacity):
-        # Your code here
-
+    def __init__(self, capacity=8):
+        self.capacity = capacity
+        self.table = [None]*capacity
+        self.items = 0
 
     def get_num_slots(self):
         """
@@ -34,8 +35,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        return len(self.table)
 
     def get_load_factor(self):
         """
@@ -43,7 +43,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.items/self.capacity
 
 
     def fnv1(self, key):
@@ -62,7 +62,10 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+        h = 5381
+        for c in key:
+            h = (h*33) + ord(c)
+        return h
 
 
     def hash_index(self, key):
@@ -81,9 +84,24 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
-
+        ind = self.hash_index(key)
+        if self.table[ind]==None:
+            self.table[ind] = LinkedList(HashTableEntry(key, value))
+            self.items += 1
+        else:
+            if self.get(key):
+                cur = self.table[ind].head
+                while cur:
+                    if cur.key == key:
+                        cur.value = value
+                    cur = cur.next
+            else:
+                self.table[ind].head.prev = HashTableEntry(key,value, self.table[ind].head)
+                self.table[ind].head = self.table[ind].head.prev
+                self.items += 1
+        if self.get_load_factor() > .7:
+            self.resize(self.capacity*2)
+                    
     def delete(self, key):
         """
         Remove the value stored with the given key.
@@ -92,7 +110,25 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        ind = self.hash_index(key)
+        if self.table[ind]:
+            cur = self.table[ind].head
+            while cur:
+                if cur.key == key:
+                    if cur.next and cur.prev:
+                        cur.next.prev = cur.prev
+                        cur.prev.next = cur.next
+                    elif cur.next:
+                        self.table[ind].head = cur.next
+                    else:
+                        self.table[ind] = None
+                    self.items -= 1
+                elif cur.next==None:
+                    print('Key not found')
+                cur = cur.next
+                
+        else:
+            print('Key not found')
 
 
     def get(self, key):
@@ -103,7 +139,17 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        ind = self.hash_index(key)
+        if self.table[ind]:
+            cur = self.table[ind].head
+            while cur:
+                if cur.key == key:
+                    return cur.value
+                cur = cur.next
+                if not cur:
+                    return None
+        else:
+            return None 
 
 
     def resize(self, new_capacity):
@@ -113,9 +159,22 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        self.capacity = new_capacity
+        old = self.table
+        self.table = [None] * new_capacity
+        for i in old:
+            if i:
+                cur = i.head
+                while cur:
+                    self.put(cur.key, cur.value)
+                    cur = cur.next
+            else:
+                pass
+            
+        
 
 
+###### increment count when insert/delete items to track load (num items stored/num slots)
 
 if __name__ == "__main__":
     ht = HashTable(8)
