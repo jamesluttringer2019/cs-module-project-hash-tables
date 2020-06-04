@@ -1,5 +1,11 @@
 def no_dups(s):
-    # Your code here
+    l = []
+    for w in s.split():
+        if w in l:
+            pass
+        else:
+            l.append(w)
+    return " ".join(l)
 
 
 
