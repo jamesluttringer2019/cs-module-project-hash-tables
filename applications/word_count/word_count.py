@@ -1,7 +1,16 @@
 def word_count(s):
-    # Your code here
-
-
+    table = {}
+    ignore_lst = '" : ; , . - + = / \ | [ ] { } ( ) * ^ &'.split()
+    s = s.lower()
+    for char in s:
+        if char in ignore_lst:
+            s = s.replace(char, '')
+    for word in s.split():
+        if word in table:
+            table[word]+=1
+        else:
+            table[word] = 1
+    return table
 
 if __name__ == "__main__":
     print(word_count(""))
